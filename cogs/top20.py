@@ -18,13 +18,18 @@ class Top20(commands.Cog):
                 await interaction.followup.send("❌ Errore nel recupero dei dati.")
                 return
 
-            description = ""
-            for clan in clans:
-                description += f"**{clan['position'] + 1}**. [{clan['short_name'].upper()}] {clan['long_name']} – Rating: **{clan['clanrating']}**\n"
+            description = "Pos  Tag      Nome                          Rating\n"
+            description += "---  -------  ----------------------------  ------\n"
+            for i, clan in enumerate(clans, start=1):
+                pos = str(i).ljust(3)
+                tag = clan['short_name'].upper().ljust(7)
+                name = clan['long_name'].ljust(29)
+                rating = str(clan['clanrating']).rjust(5)
+                description += f"{pos}  {tag}  {name}  {rating}\n"
 
             embed = discord.Embed(
                 title="🏆 Top 20 Clan War Thunder",
-                description=description,
+                description=f"```{description}```",
                 color=discord.Color.gold()
             )
             await interaction.followup.send(embed=embed)
