@@ -23,13 +23,37 @@ class Clan(commands.Cog):
             return
 
         squadron_name = clan_data.get("long_name")
-        embed = await fetch_squadron_info(squadron_name, type)
+        embed_info = await fetch_squadron_info(squadron_name, type)
 
-        if embed:
-            embed.set_footer(text="📊 Dati da warthunder.com")
-            await interaction.followup.send(embed=embed)
-        else:
-            await interaction.followup.send("❌ Errore nel recupero dei dati della squadriglia.", ephemeral=True)
+        # Ricrea embed nello stile di top20
+        embed = discord.Embed(
+            title=f"📋 Informazioni Squadriglia: {clan_data.get('long_name')} [{clan_data.get('short_name').upper()}]",
+            description=f"Tag ufficiale: `{clan_data.get('tag') or 'N/A'}`",
+            color=discord.Color.gold()
+        )
+
+        # Esempio struttura a colonne come /top20
+        embed.add_field(name="🔢 Posizione", value=str(clan_data.get('position', 'N/A')), inline=True)
+        embed.add_field(name="👥 Membri", value=str(clan_data.get('members', 'N/A')), inline=True)
+        embed.add_field(name="⚔️ Battaglie", value=str(clan_data.get('battles', 'N/A')), inline=True)
+
+        embed.add_field(name="🏆 Vittorie", value=str(clan_data.get('wins', 'N/A')), inline=True)
+        embed.add_field(name="✈️ Uccisioni Aeree", value=str(clan_data.get('a_kills', 'N/A')), inline=True)
+        embed.add_field(name="🚜 Uccisioni Terra", value=str(clan_data.get('g_kills', 'N/A')), inline=True)
+
+        embed.add_field(name="💀 Morti", value=str(clan_data.get('deaths', 'N/A')), inline=True)
+        embed.add_field(name="⏳ Tempo di gioco", value=str(clan_data.get('playtime', 'N/A')), inline=True)
+        embed.add_field(name="⭐ Clan Rating", value=str(clan_data.get('clanrating', 'N/A')), inline=True)
+
+        # Se fetch_squadron_info restituisce un embed o dati extra puoi aggiungerli qui
+        if embed_info:
+            for field in embed_info.fields:
+                embed.add_field(name=field.name, value=field.value, inline=field.inline)
+
+        embed.set_footer(text="📊 Dati da warthunder.com")
+        embed.timestamp = discord.utils.utcnow()
+
+        await interaction.followup.send(embed=embed)
 
 async def setup(bot):
     await bot.add_cog(Clan(bot))
