@@ -1,6 +1,6 @@
 from discord.ext import commands
 import discord
-from Leaderboard import search_for_clan
+from functions.search_for_clan import search_for_clan
 from Data_Extractor import fetch_squadron_info
 
 class Clan(commands.Cog):
