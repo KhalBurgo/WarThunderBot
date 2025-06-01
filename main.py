@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 import os
-from keep_alive import keep_alive
+#from keep_alive import keep_alive
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -11,7 +11,7 @@ print("🛡️ GUILD_ID:", os.getenv("GUILD_ID"))
 
 intents = discord.Intents.default()
 intents.message_content = True
-bot = commands.Bot(command_prefix=None, intents=intents)
+bot = commands.Bot(command_prefix="!", intents=intents)
 
 # Blocco on_ready
 @bot.event
@@ -53,7 +53,7 @@ async def on_app_command_error(interaction: discord.Interaction, error):
         pass
 
 #  Render
-keep_alive()
+#keep_alive()
 
 # TOKEN + Controllo errori
 token = os.getenv("TOKEN")
