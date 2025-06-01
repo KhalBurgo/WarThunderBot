@@ -25,9 +25,10 @@ class ShowCommands(commands.Cog):
         )
 
         pretty_names = {
-            "clan_name": "🏷️ Nome clan",
+            "clan_name": "🏷️ Squadriglia",
+            "clan_tag": "📌 TAG",
             "language": "🌐 Lingua",
-            "prefix": "📌 Prefisso"
+            "log_channel": "Report Channel"
         }
 
         for key, value in prefs.items():

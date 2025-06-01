@@ -13,6 +13,8 @@ class InputModal(discord.ui.Modal):
         self.add_item(self.input)
 
     async def on_submit(self, interaction: discord.Interaction):
+        await interaction.response.defer(ephemeral=True)  # evita timeout dell'interazione
+
         prefs = load_preferences(self.guild_id)
         tag = self.input.value.strip().upper()
         prefs["clan_tag"] = tag
@@ -22,15 +24,13 @@ class InputModal(discord.ui.Modal):
         if clan_data:
             prefs["clan_name"] = clan_data.get("long_name", "")
             save_preferences(self.guild_id, prefs)
-            await interaction.response.send_message(
-                f"✅ Tag impostato su: `{tag}`\n📛 Nome squadriglia: **{prefs['clan_name']}**",
-                ephemeral=True
+            await interaction.followup.send(
+                f"✅ Tag impostato su: `{tag}`\n📛 Nome squadriglia: **{prefs['clan_name']}**"
             )
         else:
             save_preferences(self.guild_id, prefs)
-            await interaction.response.send_message(
-                f"⚠️ Tag impostato su: `{tag}`, ma la squadriglia non è stata trovata online.",
-                ephemeral=True
+            await interaction.followup.send(
+                f"⚠️ Tag impostato su: `{tag}`, ma la squadriglia non è stata trovata online."
             )
 
 # Select principale per scegliere cosa configurare

@@ -6,7 +6,7 @@ import datetime
 import time
 import psutil
 
-BOT_VERSION = "1.0.0"  # Imposta la versione del tuo bot
+BOT_VERSION = "1.0.0 Alpha"  # Imposta la versione del tuo bot
 start_time = time.time()
 
 class Info(commands.Cog):
@@ -15,6 +15,8 @@ class Info(commands.Cog):
 
     @app_commands.command(name="info", description="Mostra le informazioni sul bot")
     async def info(self, interaction: discord.Interaction):
+        await interaction.response.defer(ephemeral=True)  # Riserva la risposta entro 3s
+
         current_time = time.time()
         uptime_seconds = int(current_time - start_time)
         uptime = str(datetime.timedelta(seconds=uptime_seconds))
@@ -32,11 +34,10 @@ class Info(commands.Cog):
         embed.add_field(name="🌐 Server connessi", value=f"{len(self.bot.guilds)}", inline=True)
         embed.add_field(name="⏱️ Uptime", value=uptime, inline=True)
 
-        # Usa psutil per memoria usata (opzionale)
         mem = psutil.Process().memory_info().rss / 1024 / 1024
         embed.add_field(name="🧠 Memoria usata", value=f"{mem:.2f} MB", inline=True)
 
-        await interaction.response.send_message(embed=embed)
+        await interaction.followup.send(embed=embed)
 
 async def setup(bot):
     await bot.add_cog(Info(bot))
