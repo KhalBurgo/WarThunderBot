@@ -12,7 +12,7 @@ import json
 scheduler = AsyncIOScheduler()
 
 def start_daily_task(bot):
-    @scheduler.scheduled_job("cron", hour=4, minute=10)
+    @scheduler.scheduled_job("cron", hour=0, minute=10)
     async def daily_point_update():
         print("⏰ Esecuzione giornaliera /pointchange")
 
