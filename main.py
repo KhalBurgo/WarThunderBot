@@ -41,6 +41,10 @@ async def on_ready():
     except Exception as e:
         print(f"❌ Errore durante la sincronizzazione dei comandi: {e}")
 
+    # ✅ Avvia il task pianificato una sola volta
+    from scheduler import start_daily_task
+    start_daily_task(bot)
+
     print("🚀 Avvio completato. Il bot è pronto!")
 
 # Gestione errori dei comandi slash
