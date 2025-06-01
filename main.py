@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 import os
-#from keep_alive import keep_alive
+from keep_alive import keep_alive
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -57,7 +57,7 @@ async def on_app_command_error(interaction: discord.Interaction, error):
         pass
 
 #  Render
-#keep_alive()
+keep_alive()
 
 # TOKEN + Controllo errori
 token = os.getenv("TOKEN")
