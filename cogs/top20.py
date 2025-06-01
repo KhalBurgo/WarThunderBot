@@ -1,7 +1,6 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-
 from functions import get_top_20  # importa la funzione da functions
 
 class Top20(commands.Cog):

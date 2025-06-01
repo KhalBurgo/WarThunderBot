@@ -2,80 +2,69 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 from utils.preferences import load_preferences, save_preferences
+from functions.search_for_clan import search_for_clan  # FUNZIONE GIUSTA!
 
-# Modal per inserire testo (nome squadriglia o tag)
-class InputModal(discord.ui.Modal):
-    def __init__(self, guild_id, field_name, label):
-        super().__init__(title=f"Imposta {field_name}")
+class InputTagModal(discord.ui.Modal):
+    def __init__(self, guild_id: int):
+        super().__init__(title="Imposta Tag Squadriglia")
         self.guild_id = guild_id
-        self.field_name = field_name
-        self.input = discord.ui.TextInput(label=label, required=True)
+        self.input = discord.ui.TextInput(
+            label="Inserisci il TAG della squadriglia (es: WTI)",
+            required=True,
+            max_length=10
+        )
         self.add_item(self.input)
 
     async def on_submit(self, interaction: discord.Interaction):
-        prefs = load_preferences(self.guild_id)
-        prefs[self.field_name] = self.input.value
-        save_preferences(self.guild_id, prefs)
-        await interaction.response.send_message(f"✅ {self.field_name} impostato su: {self.input.value}", ephemeral=True)
+        tag = self.input.value.strip().upper()
 
-# Select per scegliere cosa settare
+        await interaction.response.defer(ephemeral=True, thinking=True)
+
+        try:
+            clan_data = await search_for_clan(tag)
+            if not clan_data:
+                await interaction.followup.send(f"❌ Nessuna squadriglia trovata con tag `{tag}`.", ephemeral=True)
+                return
+
+            prefs = load_preferences(self.guild_id)
+            prefs["clan_tag"] = tag
+            prefs["clan_name"] = clan_data["long_name"]
+            save_preferences(self.guild_id, prefs)
+
+            await interaction.followup.send(
+                f"✅ Tag impostato su `{tag}`.\n"
+                f"📛 Nome squadriglia: `{clan_data['long_name']}`",
+                ephemeral=True
+            )
+
+        except Exception as e:
+            await interaction.followup.send(f"❌ Errore durante il recupero della squadriglia: {e}", ephemeral=True)
+
 class SetOptionSelect(discord.ui.Select):
-    def __init__(self, guild_id):
+    def __init__(self, guild_id: int):
         self.guild_id = guild_id
         options = [
-            discord.SelectOption(label="Squadriglia", description="Imposta il nome della squadriglia", value="clan_name"),
-            discord.SelectOption(label="Tag", description="Imposta il tag della squadriglia", value="clan_tag"),
-            discord.SelectOption(label="Lingua", description="Imposta la lingua del server", value="language"),
+            discord.SelectOption(
+                label="Tag Squadriglia",
+                description="Imposta il tag della squadriglia",
+                value="clan_tag"
+            ),
         ]
         super().__init__(placeholder="Scegli cosa impostare...", min_values=1, max_values=1, options=options)
 
     async def callback(self, interaction: discord.Interaction):
-        choice = self.values[0]
-
-        if choice == "language":
-            # Se è lingua, mostra il menu a tendina lingua
-            view = LanguageSelectView(self.guild_id)
-            await interaction.response.edit_message(content="Seleziona la lingua:", view=view)
-        else:
-            # Per nome e tag mostra modal input testo
-            label = "Nome Squadriglia" if choice == "clan_name" else "Tag Squadriglia"
-            modal = InputModal(self.guild_id, choice, label)
-            await interaction.response.send_modal(modal)
-
-class LanguageSelect(discord.ui.Select):
-    def __init__(self, guild_id):
-        self.guild_id = guild_id
-        options = [
-            discord.SelectOption(label="Italiano 🇮🇹", value="it"),
-            discord.SelectOption(label="English 🇬🇧", value="en"),
-            discord.SelectOption(label="Français 🇫🇷", value="fr"),
-            discord.SelectOption(label="Español 🇪🇸", value="es"),
-            discord.SelectOption(label="Русский 🇷🇺", value="ru"),
-            discord.SelectOption(label="Deutsch 🇩🇪", value="de"),
-        ]
-        super().__init__(placeholder="Seleziona la lingua...", min_values=1, max_values=1, options=options)
-
-    async def callback(self, interaction: discord.Interaction):
-        selected_lang = self.values[0]
-        prefs = load_preferences(self.guild_id)
-        prefs["language"] = selected_lang
-        save_preferences(self.guild_id, prefs)
-        await interaction.response.edit_message(content=f"✅ Lingua impostata su: {selected_lang}", view=None)
-
-class LanguageSelectView(discord.ui.View):
-    def __init__(self, guild_id):
-        super().__init__(timeout=60)
-        self.add_item(LanguageSelect(guild_id))
+        modal = InputTagModal(self.guild_id)
+        await interaction.response.send_modal(modal)
 
 class Set(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @app_commands.command(name="set", description="Configura le preferenze del server")
+    @app_commands.command(name="set", description="Imposta il TAG squadriglia del server")
     async def set(self, interaction: discord.Interaction):
-        view = discord.ui.View()
+        view = discord.ui.View(timeout=60)
         view.add_item(SetOptionSelect(interaction.guild.id))
-        await interaction.response.send_message("Scegli cosa vuoi impostare:", view=view, ephemeral=True)
+        await interaction.response.send_message("⚙️ Scegli cosa vuoi impostare:", view=view, ephemeral=True)
 
-async def setup(bot):
+async def setup(bot: commands.Bot):
     await bot.add_cog(Set(bot))

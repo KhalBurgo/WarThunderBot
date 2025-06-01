@@ -1,7 +1,7 @@
 from discord.ext import commands
 import discord
 from functions.search_for_clan import search_for_clan
-from Data_Extractor import fetch_squadron_info
+from functions.fetch_squadron_info import fetch_squadron_info
 
 class Clan(commands.Cog):
     def __init__(self, bot):
